@@ -1,7 +1,12 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
-import { EXTERNAL_AGENT_ID_HEADER, RouteId } from "@shared";
+import {
+  EXTERNAL_AGENT_ID_HEADER,
+  RouteId,
+  SupportedProviders,
+  USER_ID_HEADER,
+} from "@shared";
 import {
   convertToModelMessages,
   generateText,
@@ -70,11 +75,11 @@ async function getSmartDefaultModel(
   agentId: string,
   organizationId: string,
 ): Promise<string> {
-  // Check what API keys are available (profile-specific or org defaults)
-  const providers: SupportedChatProvider[] = ["anthropic", "gemini", "openai"];
-
-  // Try to find an available API key in order of preference
-  for (const provider of providers) {
+  /**
+   * Check what API keys are available (profile-specific or org defaults)
+   * Try to find an available API key in order of preference
+   */
+  for (const provider of SupportedProviders) {
     const profileApiKey = await ChatApiKeyModel.getProfileApiKey(
       agentId,
       provider,
@@ -82,7 +87,7 @@ async function getSmartDefaultModel(
     );
 
     if (profileApiKey?.secretId) {
-      const secret = await secretManager.getSecret(profileApiKey.secretId);
+      const secret = await secretManager().getSecret(profileApiKey.secretId);
       const secretValue =
         secret?.secret?.apiKey ??
         secret?.secret?.anthropicApiKey ??
@@ -226,7 +231,7 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
       );
 
       if (profileApiKey?.secretId) {
-        const secret = await secretManager.getSecret(profileApiKey.secretId);
+        const secret = await secretManager().getSecret(profileApiKey.secretId);
         // Support both old format (anthropicApiKey) and new format (apiKey)
         const secretValue =
           secret?.secret?.apiKey ??
@@ -249,7 +254,7 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
           provider,
         );
         if (orgDefault?.secretId) {
-          const secret = await secretManager.getSecret(orgDefault.secretId);
+          const secret = await secretManager().getSecret(orgDefault.secretId);
           // Support both old format (anthropicApiKey) and new format (apiKey)
           const secretValue =
             secret?.secret?.apiKey ??
@@ -294,12 +299,14 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       // Create provider client pointing to LLM Proxy
-      // Forward external agent ID header if present
-      const clientHeaders = externalAgentId
-        ? {
-            [EXTERNAL_AGENT_ID_HEADER]: externalAgentId,
-          }
-        : undefined;
+      // Forward external agent ID and user ID headers to LLM Proxy
+      // so interactions can be properly associated with the user
+      const clientHeaders: Record<string, string> = {};
+      if (externalAgentId) {
+        clientHeaders[EXTERNAL_AGENT_ID_HEADER] = externalAgentId;
+      }
+      // Always include user ID header so interactions are saved with user association
+      clientHeaders[USER_ID_HEADER] = user.id;
 
       let llmClient:
         | ReturnType<typeof createAnthropic>
@@ -311,7 +318,8 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
         llmClient = createAnthropic({
           apiKey: providerApiKey,
           baseURL: `http://localhost:${config.api.port}/v1/anthropic/${conversation.agentId}/v1`,
-          headers: clientHeaders,
+          headers:
+            Object.keys(clientHeaders).length > 0 ? clientHeaders : undefined,
         });
       } else if (provider === "gemini") {
         // URL format: /v1/gemini/:agentId/v1beta/models
@@ -319,14 +327,16 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
         llmClient = createGoogleGenerativeAI({
           apiKey: providerApiKey || "vertex-ai-mode",
           baseURL: `http://localhost:${config.api.port}/v1/gemini/${conversation.agentId}/v1beta`,
-          headers: clientHeaders,
+          headers:
+            Object.keys(clientHeaders).length > 0 ? clientHeaders : undefined,
         });
       } else if (provider === "openai") {
         // URL format: /v1/openai/:agentId (SDK appends /chat/completions)
         llmClient = createOpenAI({
           apiKey: providerApiKey,
           baseURL: `http://localhost:${config.api.port}/v1/openai/${conversation.agentId}`,
-          headers: clientHeaders,
+          headers:
+            Object.keys(clientHeaders).length > 0 ? clientHeaders : undefined,
         });
       } else {
         throw new ApiError(400, `Unsupported provider: ${provider}`);
@@ -767,7 +777,9 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
         );
 
         if (profileApiKey?.secretId) {
-          const secret = await secretManager.getSecret(profileApiKey.secretId);
+          const secret = await secretManager().getSecret(
+            profileApiKey.secretId,
+          );
           // Support both old format (anthropicApiKey) and new format (apiKey)
           const secretValue =
             secret?.secret?.apiKey ?? secret?.secret?.anthropicApiKey;
@@ -784,7 +796,7 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
           "anthropic",
         );
         if (orgDefault?.secretId) {
-          const secret = await secretManager.getSecret(orgDefault.secretId);
+          const secret = await secretManager().getSecret(orgDefault.secretId);
           // Support both old format (anthropicApiKey) and new format (apiKey)
           const secretValue =
             secret?.secret?.apiKey ?? secret?.secret?.anthropicApiKey;

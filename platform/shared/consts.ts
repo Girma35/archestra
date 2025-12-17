@@ -42,6 +42,20 @@ export const E2eTestId = {
   RemoveTeamBadge: "remove-team-badge",
   PromptOnInstallationCheckbox: "prompt-on-installation-checkbox",
   RevokeCredentialButton: "revoke-credential-button",
+  ExternalSecretSelector: "external-secret-selector",
+  SelectEnvironmentVariableType: "select-environment-variable-type",
+  AddCatalogItemButton: "add-catalog-item-button",
+  ConfigureVaultFolderButton: "configure-vault-folder-button",
+  ExternalSecretSelectorTeamTrigger: "external-secret-selector-team-trigger",
+  ExternalSecretSelectorSecretTrigger:
+    "external-secret-selector-secret-trigger",
+  ExternalSecretSelectorSecretTriggerKey:
+    "external-secret-selector-secret-trigger-key",
+  InlineVaultSecretSelectorSecretTrigger:
+    "inline-vault-secret-selector-secret-trigger",
+  InlineVaultSecretSelectorSecretTriggerKey:
+    "inline-vault-secret-selector-secret-trigger-key",
+  ManageMembersButton: "manage-members-button",
   // Chat Settings
   ChatApiKeysTable: "chat-api-keys-table",
   AddChatApiKeyButton: "add-chat-api-key-button",
@@ -51,6 +65,8 @@ export const E2eTestId = {
   SetDefaultChatApiKeyButton: "set-default-chat-api-key-button",
   ManageProfilesChatApiKeyButton: "manage-profiles-chat-api-key-button",
   ChatApiKeyDefaultBadge: "chat-api-key-default-badge",
+  BulkAssignChatApiKeysButton: "bulk-assign-chat-api-keys-button",
+  BulkAssignChatApiKeysDialog: "bulk-assign-chat-api-keys-dialog",
 } as const;
 export type E2eTestId = (typeof E2eTestId)[keyof typeof E2eTestId];
 
@@ -64,7 +80,7 @@ export const DEFAULT_ADMIN_PASSWORD_ENV_VAR_NAME =
 export const EMAIL_PLACEHOLDER = "admin@example.com";
 export const PASSWORD_PLACEHOLDER = "password";
 
-export const DEFAULT_PROFILE_NAME = "Default Profile with Archestra";
+export const DEFAULT_PROFILE_NAME = "Default Profile";
 
 /**
  * Separator used to construct fully-qualified MCP tool names
@@ -89,6 +105,13 @@ export const MCP_CATALOG_API_BASE_URL =
 export const EXTERNAL_AGENT_ID_HEADER = "X-Archestra-Agent-Id";
 
 /**
+ * Header name for user ID.
+ * Clients can pass this header to associate interactions with a specific user (by their Archestra user UUID).
+ * Particularly useful for identifying which user was using the Archestra Chat.
+ */
+export const USER_ID_HEADER = "X-Archestra-User-Id";
+
+/**
  * SSO Provider IDs - these are the canonical provider identifiers used for:
  * - Account linking (trustedProviders)
  * - Provider registration
@@ -107,3 +130,5 @@ export type SsoProviderId =
 
 /** List of all predefined SSO provider IDs for account linking */
 export const SSO_TRUSTED_PROVIDER_IDS = Object.values(SSO_PROVIDER_ID);
+
+export const DEFAULT_VAULT_TOKEN = "dev-root-token";

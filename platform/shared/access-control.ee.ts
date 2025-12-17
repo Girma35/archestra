@@ -200,6 +200,9 @@ export const requiredEndpointPermissionsMap: Partial<
   [RouteId.GetUniqueExternalAgentIds]: {
     interaction: ["read"],
   },
+  [RouteId.GetUniqueUserIds]: {
+    interaction: ["read"],
+  },
   [RouteId.GetOperators]: {
     policy: ["read"],
   },
@@ -452,6 +455,9 @@ export const requiredEndpointPermissionsMap: Partial<
   [RouteId.UpdateChatApiKeyProfiles]: {
     chatSettings: ["update"],
   },
+  [RouteId.BulkAssignChatApiKeysToProfiles]: {
+    chatSettings: ["update"],
+  },
   [RouteId.GetPrompts]: {
     prompt: ["read"],
   },
@@ -583,6 +589,9 @@ export const requiredEndpointPermissionsMap: Partial<
     organization: ["read"],
   },
   [RouteId.CheckSecretsConnectivity]: {
+    organization: ["update"],
+  },
+  [RouteId.InitializeSecretsManager]: {
     organization: ["update"],
   },
   [RouteId.GetSecret]: {
