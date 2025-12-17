@@ -1,5 +1,5 @@
 import type { archestraApiTypes } from "@shared";
-import { ArrowRightIcon, Plus, Trash2Icon } from "lucide-react";
+import { ArrowRightIcon, InfoIcon, Plus, Trash2Icon } from "lucide-react";
 import { ButtonWithTooltip } from "@/components/button-with-tooltip";
 import { DebouncedInput } from "@/components/debounced-input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useProfileToolPatchMutation } from "@/lib/agent-tools.query";
 import {
   useOperators,
@@ -78,6 +79,14 @@ export function ToolCallPolicies({
             <div className="flex items-center justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm">If</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InfoIcon className="w-4 h-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Matching is case-sensitive</p>
+                  </TooltipContent>
+                </Tooltip>
                 <Select
                   defaultValue={policy.argumentName}
                   onValueChange={(value) => {

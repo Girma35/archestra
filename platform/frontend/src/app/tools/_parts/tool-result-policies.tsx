@@ -1,6 +1,6 @@
 import type { archestraApiTypes } from "@shared";
 import { toPath } from "lodash-es";
-import { ArrowRightIcon, Plus, Trash2Icon } from "lucide-react";
+import { ArrowRightIcon, InfoIcon, Plus, Trash2Icon } from "lucide-react";
 import { CodeText } from "@/components/code-text";
 import { DebouncedInput } from "@/components/debounced-input";
 import {
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useProfileToolPatchMutation } from "@/lib/agent-tools.query";
 import {
   useOperators,
@@ -184,6 +185,7 @@ export function ToolResultPolicies({
           <p className="text-sm text-muted-foreground mt-2"></p>
         </div>
       </div>
+
       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md border border-border">
         <div className="flex items-center gap-3">
           <div className="text-xs font-medium text-muted-foreground">
@@ -219,6 +221,14 @@ export function ToolResultPolicies({
             <div className="flex flex-row items-center gap-4 justify-between">
               <div className="flex flex-row items-center gap-4">
                 If
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InfoIcon className="w-4 h-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Matching is case-sensitive</p>
+                  </TooltipContent>
+                </Tooltip>
                 <DebouncedInput
                   placeholder="Attribute path"
                   initialValue={policy.attributePath}
