@@ -1,6 +1,6 @@
 import type { archestraApiTypes } from "@shared";
 import { toPath } from "lodash-es";
-import { ArrowRightIcon, InfoIcon, Plus, Trash2Icon } from "lucide-react";
+import { ArrowRightIcon, Plus, Trash2Icon } from "lucide-react";
 import { CodeText } from "@/components/code-text";
 import { DebouncedInput } from "@/components/debounced-input";
 import {
@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+import { CaseSensitivityInfo } from "@/components/case-sensitivity-info";
 import { useProfileToolPatchMutation } from "@/lib/agent-tools.query";
 import {
   useOperators,
@@ -221,14 +222,7 @@ export function ToolResultPolicies({
             <div className="flex flex-row items-center gap-4 justify-between">
               <div className="flex flex-row items-center gap-4">
                 If
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <InfoIcon className="w-4 h-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Matching is case-sensitive</p>
-                  </TooltipContent>
-                </Tooltip>
+
                 <DebouncedInput
                   placeholder="Attribute path"
                   initialValue={policy.attributePath}
@@ -274,7 +268,9 @@ export function ToolResultPolicies({
                     })
                   }
                 />
+                <CaseSensitivityInfo />
               </div>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -283,6 +279,7 @@ export function ToolResultPolicies({
                   toolResultPoliciesDeleteMutation.mutate(policy.id)
                 }
               >
+
                 <Trash2Icon className="w-4 h-4" />
               </Button>
             </div>
