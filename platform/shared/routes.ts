@@ -149,6 +149,7 @@ export const RouteId = {
   DeleteChatConversation: "deleteChatConversation",
   GenerateChatConversationTitle: "generateChatConversationTitle",
   GetChatMcpTools: "getChatMcpTools",
+  UpdateChatMessage: "updateChatMessage",
   GetConversationEnabledTools: "getConversationEnabledTools",
   UpdateConversationEnabledTools: "updateConversationEnabledTools",
   DeleteConversationEnabledTools: "deleteConversationEnabledTools",
@@ -213,6 +214,11 @@ export const RouteId = {
   GetTokens: "getTokens",
   GetTokenValue: "getTokenValue",
   RotateToken: "rotateToken",
+
+  // User Token Routes (Personal Tokens)
+  GetUserToken: "getUserToken",
+  GetUserTokenValue: "getUserTokenValue",
+  RotateUserToken: "rotateUserToken",
 
   // Statistics Routes
   GetTeamStatistics: "getTeamStatistics",

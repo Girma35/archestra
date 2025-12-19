@@ -2,6 +2,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import {
+  type ChatErrorResponse,
   EXTERNAL_AGENT_ID_HEADER,
   RouteId,
   SupportedProviders,
@@ -44,6 +45,7 @@ import {
   UpdateConversationSchema,
   UuidIdSchema,
 } from "@/types";
+import { mapProviderError } from "./errors";
 
 /**
  * Detect which provider a model belongs to based on its name
@@ -387,23 +389,36 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
             "Chat stream error occurred",
           );
 
-          // Return full error as JSON string for debugging
+          // Map provider error to user-friendly ChatErrorResponse
+          const mappedError: ChatErrorResponse = mapProviderError(
+            error,
+            provider,
+          );
+
+          logger.info(
+            {
+              mappedError,
+              originalErrorType:
+                error instanceof Error ? error.name : typeof error,
+              willBeSentToFrontend: true,
+            },
+            "Returning mapped error to frontend via stream",
+          );
+
+          // mapProviderError safely serializes raw errors, but add defensive try-catch
           try {
-            const fullError = JSON.stringify(error, null, 2);
-            logger.info(
-              { fullError, willBeSentToFrontend: true },
-              "Returning full error to frontend via stream",
-            );
-            return fullError;
+            return JSON.stringify(mappedError);
           } catch (stringifyError) {
-            // If stringify fails (circular reference), fall back to error message
-            const fallbackMessage =
-              error instanceof Error ? error.message : String(error);
-            logger.info(
-              { fallbackMessage, stringifyError },
-              "Failed to stringify error, using fallback",
+            logger.error(
+              { stringifyError, errorCode: mappedError.code },
+              "Failed to stringify mapped error, returning minimal error",
             );
-            return fallbackMessage;
+            // Return a minimal error response without the raw error
+            return JSON.stringify({
+              code: mappedError.code,
+              message: mappedError.message,
+              isRetryable: mappedError.isRetryable,
+            });
           }
         },
         onFinish: async ({ messages: finalMessages }) => {
@@ -874,6 +889,76 @@ The title should capture the main topic or theme of the conversation. Respond wi
         // Return the conversation without title update on error
         return reply.send(conversation);
       }
+    },
+  );
+
+  // Message Update Route
+  fastify.patch(
+    "/api/chat/messages/:id",
+    {
+      schema: {
+        operationId: RouteId.UpdateChatMessage,
+        description: "Update a specific text part in a message",
+        tags: ["Chat"],
+        params: z.object({ id: UuidIdSchema }),
+        body: z.object({
+          partIndex: z.number().int().min(0),
+          text: z.string().min(1),
+          deleteSubsequentMessages: z.boolean().optional(),
+        }),
+        response: constructResponseSchema(SelectConversationSchema),
+      },
+    },
+    async (
+      {
+        params: { id },
+        body: { partIndex, text, deleteSubsequentMessages },
+        user,
+        organizationId,
+      },
+      reply,
+    ) => {
+      // Fetch the message to get its conversation ID
+      const message = await MessageModel.findById(id);
+
+      if (!message) {
+        throw new ApiError(404, "Message not found");
+      }
+
+      // Verify the user has access to the conversation
+      const conversation = await ConversationModel.findById(
+        message.conversationId,
+        user.id,
+        organizationId,
+      );
+
+      if (!conversation) {
+        throw new ApiError(404, "Message not found or access denied");
+      }
+
+      // Update the message and optionally delete subsequent messages atomically
+      // Using a transaction ensures both operations succeed or fail together,
+      // preventing inconsistent state where message is updated but subsequent
+      // messages remain when they should have been deleted
+      await MessageModel.updateTextPartAndDeleteSubsequent(
+        id,
+        partIndex,
+        text,
+        deleteSubsequentMessages ?? false,
+      );
+
+      // Return updated conversation with all messages
+      const updatedConversation = await ConversationModel.findById(
+        message.conversationId,
+        user.id,
+        organizationId,
+      );
+
+      if (!updatedConversation) {
+        throw new ApiError(500, "Failed to retrieve updated conversation");
+      }
+
+      return reply.send(updatedConversation);
     },
   );
 

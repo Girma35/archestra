@@ -441,6 +441,9 @@ export const requiredEndpointPermissionsMap: Partial<
   [RouteId.GetChatModels]: {
     conversation: ["read"],
   },
+  [RouteId.UpdateChatMessage]: {
+    conversation: ["update"],
+  },
   [RouteId.GetConversationEnabledTools]: {
     conversation: ["read"],
   },
@@ -560,6 +563,11 @@ export const requiredEndpointPermissionsMap: Partial<
 
   [RouteId.GetOnboardingStatus]: {}, // Onboarding status route - available to all authenticated users (no specific permissions required)
   [RouteId.GetUserPermissions]: {}, // User permissions route - available to all authenticated users (no specific permissions required)
+
+  // User token routes - available to all authenticated users (manages their own personal token)
+  [RouteId.GetUserToken]: {},
+  [RouteId.GetUserTokenValue]: {},
+  [RouteId.RotateUserToken]: {},
   [RouteId.GetTokenPrices]: {
     tokenPrice: ["read"],
   },
