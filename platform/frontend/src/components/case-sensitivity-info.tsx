@@ -1,4 +1,5 @@
 import { InfoIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function CaseSensitivityInfo() {
@@ -6,18 +7,21 @@ export function CaseSensitivityInfo() {
         <TooltipProvider>
             <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>
-                    <button
+                    <Button
                         type="button"
-                        className="inline-flex items-center justify-center rounded-full transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="rounded-full h-auto w-auto p-1"
                         aria-label="Case sensitivity information"
                     >
                         <InfoIcon className="w-4 h-4 text-muted-foreground" />
-                    </button>
+                    </Button>
                 </TooltipTrigger>
                 {/* Added w-fit and min-w-[150px] for a wider appearance */}
                 <TooltipContent
                     side="top"
-                    className="bg-white text-black border border-slate-200 px-4 py-2 shadow-xl min-w-[160px] text-center"
+                    sideOffset={4}
+                    className="min-w-[160px] text-center"
                 >
                     <p className="text-sm font-medium leading-tight">
                         Matching is case-sensitive
