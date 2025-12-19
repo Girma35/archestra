@@ -17,7 +17,6 @@ export function CaseSensitivityInfo() {
                         <InfoIcon className="w-4 h-4 text-muted-foreground" />
                     </Button>
                 </TooltipTrigger>
-                {/* Added w-fit and min-w-[150px] for a wider appearance */}
                 <TooltipContent
                     side="top"
                     sideOffset={4}
